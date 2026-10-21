@@ -35,8 +35,17 @@ Each tool has one job. Ask before moving a responsibility to a different tool.
 - **Policy knowledge:** a Sanity Context endpoint in Knowledge Base mode. Context endpoints are created in the Dashboard's Context app and read with an organization token (Context Viewer), per https://www.sanity.io/docs/ai/context-migration-guide. One endpoint serves one mode. The Context skill still describes `sanity.agentContext` Studio documents with a project token; that route is deprecated, so don't use it.
 - **Typed decisions** (which stay topics and policies answer a question): Jev, called from API routes through the AI SDK's `experimental_evaluate` with the `@ai-sdk/typesafe-ai` provider and `TYPESAFE_AI_API_KEY`. No Vercel AI Gateway. Keep `ai` and `@ai-sdk/typesafe-ai` pinned to exact versions, since the API is experimental.
 - **Answer text:** none generated. Answers show the stay's own fields and policy text word for word, with their source. No LLM runs in the app.
-- **Styling:** NativeWind v5 (Tailwind CSS v4) with `className`. It's a release candidate: keep `nativewind`, `react-native-css`, `tailwindcss`, `@tailwindcss/postcss` and `lightningcss` pinned to exact versions, keep the `lightningcss` override in `package.json`, and only change them by following the NativeWind v5 docs (https://www.nativewind.dev/v5/llms.txt).
+- **Styling:** NativeWind v5 (Tailwind CSS v4) with `className`. It's a release candidate: keep `nativewind`, `react-native-css`, `tailwindcss`, `@tailwindcss/postcss` and `lightningcss` pinned to exact versions, keep the `lightningcss` override in `package.json`, and only change them by following the NativeWind v5 docs (https://www.nativewind.dev/v5/llms.txt). Tokens and components: see Design system.
 - **Analytics:** PostHog, identified through Clerk. Use `posthog-react-native` with its Expo modules only (`expo-file-system`, `expo-application`, `expo-device`, `expo-localization`). Events, autocapture, feature flags and JS error tracking work in Expo Go. Don't add `@posthog/react-native-plugin` (session replay, native crash capture, push): it needs a development build.
+
+## Design system
+
+- Tokens (colors, fonts, type ramp, radii, shadows, `--spacing: 4px`) live only in `global.css` `@theme`. `src/constants/theme.ts` mirrors just the values that can't go through `className` (icon colors/sizes, motion). No hex, `fontSize` or `fontWeight` anywhere else; new values become tokens first. Light mode only for now.
+- Font: Plus Jakarta Sans 400/500/700/800 via `@expo-google-fonts/plus-jakarta-sans`, loaded in the root layout. Pick weight with `font-jakarta` / `-medium` / `-bold` / `-extrabold`, never `fontWeight` or Tailwind's `font-bold` (weight utilities). Type-ramp line heights are unitless ratios: react-native-css multiplies them by font size, so `34px` would become 34×.
+- Icons: `lucide-react-native`, stroke 2, sizes from `iconSize`. Brand marks (Google G) are SVG components.
+- Shared UI lives in `src/components/ui/` (import from `@/components/ui`). Use these before writing new styled views. Text always goes through `Text` with a `variant`.
+- Third-party views that ignore `className` (`expo-image`, `GlassView`, `Animated.View`) sit inside a styled `View`.
+- Preview every new primitive in `src/app/design-system.tsx` (dev-only, linked from home).
 
 ## Rules
 
