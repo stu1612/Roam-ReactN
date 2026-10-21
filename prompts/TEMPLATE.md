@@ -1,32 +1,29 @@
-# NN: Feature name
+# NN · Feature name
 
-Status: draft | approved | done
+Status: draft
 
 ## Goal
 
-What the user can do when this is finished, in one or two sentences.
-
-## Context
-
-Relevant decisions from AGENTS.md, earlier plans this builds on, and the docs pages read (with links).
+What the user can do when this is done, in one or two sentences.
 
 ## Decisions
 
-Choices made for this feature, including defaults picked without asking.
+The choices this relies on, including answers to questions and defaults picked. One line each.
 
-## Design
+## Out of scope
 
-For UI work: elements, states (loading, error, empty), tokens, assets, and copy. Enough to build without the image. List proposed new tokens and missing assets.
+What this plan deliberately leaves out.
 
 ## Steps
 
-1. Each step names the files it touches and what changes.
+### 1. Step title
+
+A full prompt for this step: the files and context it needs and what done looks like. Each step leaves the app working.
 
 ## Verification
 
-- Lint and type check pass.
-- Checks specific to this feature, including what to look at on the iPhone in Expo Go.
+The flows to run, the cases to try, and the checks to pass, ending with an end-to-end check of the feature.
 
-## Result
+## AGENTS.md updates
 
-Filled in at close-out: what was built and anything that differs from the plan.
+Any decision later features must respect, and the section it belongs in. Note rules this replaces. Write "None" if nothing.
