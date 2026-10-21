@@ -19,7 +19,7 @@ npx eas-cli@latest <cmd>    # EAS builds, submits, and updates (use instead of b
 ## Expo
 
 - Expo ships breaking changes every SDK release, so don't trust memory. Before touching an Expo, EAS, or React Native API, check the `expo` major version in `package.json` and read `https://docs.expo.dev/versions/v<major>.0.0/`. For anything else, start from https://docs.expo.dev/llms.txt and follow its links.
-- Routes live in `src/app/`: every file is a screen and `_layout.tsx` files define navigators. API routes are `src/app/api/*+api.ts`. Keep components, hooks, and utils outside `src/app/`.
+- Routes live in `src/app/`: every file is a screen and `_layout.tsx` files define navigators. Onboarding is `src/app/index.tsx`; auth screens live in `src/app/(auth)/` (placeholders until Clerk). API routes are `src/app/api/*+api.ts`. Keep components, hooks, and utils outside `src/app/`.
 - `ios/` and `android/` are generated. Never create or edit them by hand; configure native behavior in `app.json` and config plugins.
 - Target iPhone first, but keep everything working on Android too: no iOS-only APIs without an Android fallback.
 - The app runs in Expo Go, which only includes its bundled native modules. Only use libraries Expo Go supports. If a feature truly needs native code outside Expo Go, ask before adding it, because it means switching to a development build (`npx eas-cli@latest build --profile development`). The user has an Expo account for EAS.

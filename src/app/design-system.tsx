@@ -72,6 +72,7 @@ const swatches = [
   ["Surface Gray", "bg-surface-muted"],
   ["Border Gray", "bg-border"],
   ["Glass Blur", "bg-glass border border-border"],
+  ["Scrim", "bg-scrim"],
 ] as const;
 
 const filters = ["Cabins", "Under $300", "Pet Friendly", "Quiet"];
@@ -131,6 +132,7 @@ export default function DesignSystem() {
 
         <Section title="03. Typography">
           <Text variant="display">Find your next stay</Text>
+          <Text variant="hero">Find a stay that fits your story</Text>
           <Text variant="heading">Modern Cabin with Hot Tub</Text>
           <Text variant="body" tone="muted">
             From mountain cabins to oceanfront villas, roam helps you find unforgettable stays for
