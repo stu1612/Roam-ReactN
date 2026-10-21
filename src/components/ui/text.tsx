@@ -2,6 +2,7 @@ import { Text as RNText, type TextProps as RNTextProps } from "react-native";
 
 const variants = {
   display: "font-jakarta-bold text-display",
+  hero: "font-jakarta-extrabold text-hero",
   heading: "font-jakarta-bold text-heading",
   title: "font-jakarta-bold text-title",
   body: "font-jakarta text-body",
