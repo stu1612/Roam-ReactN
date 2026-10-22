@@ -1,7 +1,7 @@
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
-import { Pressable, useWindowDimensions, View } from "react-native";
+import { Alert, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -10,6 +10,8 @@ import { OnboardingSlide } from "@/components/onboarding/onboarding-slide";
 import { ProgressBars } from "@/components/onboarding/progress-bars";
 import { slides } from "@/components/onboarding/slides";
 import { Button, GoogleIcon, Logo, Text } from "@/components/ui";
+import { authErrorMessage } from "@/lib/auth/clerk-errors";
+import { useGoogleSignIn } from "@/lib/auth/use-google-sign-in";
 
 /** Space between the slide text and the buttons. */
 const TEXT_GAP = 24;
@@ -26,6 +28,19 @@ export default function Onboarding() {
     listHeight && textHeight ? Math.min(height * 0.58, fitted) : height * 0.58,
   );
   const progress = useSharedValue(0);
+  const signInWithGoogle = useGoogleSignIn();
+  const [googlePending, setGooglePending] = useState(false);
+
+  async function google() {
+    setGooglePending(true);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      Alert.alert("Couldn't sign in", authErrorMessage(e));
+    } finally {
+      setGooglePending(false);
+    }
+  }
 
   const onScroll = useAnimatedScrollHandler((e) => {
     progress.value = e.contentOffset.x / width;
@@ -86,7 +101,8 @@ export default function Onboarding() {
           title="Continue with Google"
           variant="secondary"
           icon={<GoogleIcon />}
-          onPress={() => router.push("/sign-in")}
+          loading={googlePending}
+          onPress={google}
         />
       </View>
     </View>
