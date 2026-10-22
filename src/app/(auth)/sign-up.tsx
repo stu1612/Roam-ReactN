@@ -1,3 +1,4 @@
+import { useSignUp } from "@clerk/expo";
 import { router } from "expo-router";
 import { Lock, Mail, User } from "lucide-react-native";
 import { useRef, useState } from "react";
@@ -8,12 +9,17 @@ import { AuthScreen } from "@/components/auth/auth-screen";
 import { OrDivider } from "@/components/auth/or-divider";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { Button, StatusBanner, TextField } from "@/components/ui";
-import { authErrorMessage, signUp } from "@/lib/auth/mock-auth";
-import { validateEmail, validateName, validatePassword } from "@/lib/auth/validation";
+import { authErrorMessage } from "@/lib/auth/clerk-errors";
+import {
+  validateEmail,
+  validateName,
+  validatePassword,
+} from "@/lib/auth/validation";
 
 type Field = "name" | "email" | "password";
 
 export default function SignUp() {
+  const { signUp } = useSignUp();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,8 +44,20 @@ export default function SignUp() {
     if (errors.name || errors.email || errors.password) return;
     setSubmitting(true);
     try {
-      await signUp({ name: name.trim(), email: email.trim(), password });
-      router.push({ pathname: "/verify", params: { email: email.trim() } });
+      const [firstName, ...rest] = name.trim().split(/\s+/);
+      const created = await signUp.password({
+        emailAddress: email.trim(),
+        password,
+        firstName,
+        lastName: rest.join(" ") || undefined,
+      });
+      if (created.error) throw created.error;
+      const sent = await signUp.verifications.sendEmailCode();
+      if (sent.error) throw sent.error;
+      router.push({
+        pathname: "/verify",
+        params: { email: email.trim(), flow: "sign-up" },
+      });
     } catch (e) {
       setFormError(authErrorMessage(e));
     } finally {
@@ -56,7 +74,7 @@ export default function SignUp() {
         <TextField
           icon={User}
           label="Full name"
-          placeholder="e.g. Adrian Hajdin"
+          placeholder="e.g. Atlas Rider"
           value={name}
           onChangeText={setName}
           onBlur={() => touch("name")}
@@ -111,6 +129,9 @@ export default function SignUp() {
           className="mt-4"
         />
       ) : null}
+
+      {/* Mount point for Clerk's bot protection. */}
+      <View nativeID="clerk-captcha" />
 
       <Button
         title="Create account"

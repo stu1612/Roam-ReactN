@@ -1,3 +1,4 @@
+import { useSignIn } from "@clerk/expo";
 import { router } from "expo-router";
 import { Lock, Mail } from "lucide-react-native";
 import { useRef, useState } from "react";
@@ -8,12 +9,13 @@ import { AuthScreen } from "@/components/auth/auth-screen";
 import { OrDivider } from "@/components/auth/or-divider";
 import { SocialButtons } from "@/components/auth/social-buttons";
 import { Button, StatusBanner, Text, TextField } from "@/components/ui";
-import { authErrorMessage, signIn } from "@/lib/auth/mock-auth";
+import { authErrorMessage } from "@/lib/auth/clerk-errors";
 import { validateEmail } from "@/lib/auth/validation";
 
 type Field = "email" | "password";
 
 export default function SignIn() {
+  const { signIn } = useSignIn();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [touched, setTouched] = useState<Partial<Record<Field, boolean>>>({});
@@ -35,9 +37,26 @@ export default function SignIn() {
     if (errors.email || errors.password) return;
     setSubmitting(true);
     try {
-      await signIn({ email: email.trim(), password });
-      if (router.canDismiss()) router.dismissAll();
-      router.replace("/home");
+      const attempt = await signIn.password({ emailAddress: email.trim(), password });
+      if (attempt.error) throw attempt.error;
+      if (signIn.status === "complete") {
+        // The root layout's guards move to home once the session is active.
+        const done = await signIn.finalize();
+        if (done.error) throw done.error;
+        return;
+      }
+      // New device (device trust) or email-code second factor: confirm by code.
+      const canEmail = signIn.supportedSecondFactors?.some((f) => f.strategy === "email_code");
+      if (
+        (signIn.status === "needs_client_trust" || signIn.status === "needs_second_factor") &&
+        canEmail
+      ) {
+        const sent = await signIn.mfa.sendEmailCode();
+        if (sent.error) throw sent.error;
+        router.push({ pathname: "/verify", params: { email: email.trim(), flow: "sign-in" } });
+        return;
+      }
+      throw new Error(`Unhandled sign-in status: ${signIn.status}`);
     } catch (e) {
       setFormError(authErrorMessage(e));
     } finally {

@@ -1,4 +1,4 @@
-import { ClerkProvider } from "@clerk/expo";
+import { ClerkProvider, useAuth } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 import "../../global.css";
 
@@ -22,25 +22,43 @@ if (!publishableKey) {
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
+  return (
+    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <RootStack />
+    </ClerkProvider>
+  );
+}
+
+function RootStack() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const [fontsLoaded, fontError] = useFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
   });
-
-  useEffect(() => {
-    if (loaded || error) SplashScreen.hideAsync();
-  }, [loaded, error]);
-
   // On a font error, render anyway with the system font rather than blocking.
-  if (!loaded && !error) return null;
+  const ready = isLoaded && (fontsLoaded || !!fontError);
 
+  // Keep the splash up until Clerk has restored the session from the token
+  // cache, so signed-in guests never see onboarding flash.
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
+
+  // Guards redirect on their own when the session starts or ends.
   return (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <Stack>
+    <Stack>
+      <Stack.Protected guard={!!isSignedIn}>
+        <Stack.Screen name="home" />
+        <Stack.Screen name="design-system" />
+      </Stack.Protected>
+      <Stack.Protected guard={!isSignedIn}>
+        <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      </Stack>
-    </ClerkProvider>
+      </Stack.Protected>
+    </Stack>
   );
 }

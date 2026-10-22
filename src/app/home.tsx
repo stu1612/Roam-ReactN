@@ -1,19 +1,27 @@
-import { Link, router, Stack } from "expo-router";
+import { useClerk, useUser } from "@clerk/expo";
+import { Link, Stack } from "expo-router";
+import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Logo, Text } from "@/components/ui";
 
-// Rebuild the stack as onboarding → sign in, so sign in keeps its back button
-// the same way it has when reached from onboarding.
-function signOut() {
-  router.replace("/");
-  router.push("/sign-in");
-}
-
 // Signed-in placeholder until the home screen is designed.
 export default function Home() {
   const insets = useSafeAreaInsets();
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const [signingOut, setSigningOut] = useState(false);
+
+  // The root layout's guards move to onboarding once the session ends.
+  async function onSignOut() {
+    setSigningOut(true);
+    try {
+      await signOut();
+    } finally {
+      setSigningOut(false);
+    }
+  }
   return (
     <View
       style={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }}
@@ -25,7 +33,7 @@ export default function Home() {
         You&apos;re in
       </Text>
       <Text variant="body" tone="muted">
-        Sign-in is mocked for now. Stays arrive with search.
+        Signed in as {user?.primaryEmailAddress?.emailAddress}. Stays arrive with search.
       </Text>
       <View className="flex-1" />
       {__DEV__ ? (
@@ -33,7 +41,7 @@ export default function Home() {
           <Button title="Design system" variant="secondary" />
         </Link>
       ) : null}
-      <Button title="Sign out" variant="secondary" onPress={signOut} />
+      <Button title="Sign out" variant="secondary" loading={signingOut} onPress={onSignOut} />
     </View>
   );
 }

@@ -1,16 +1,20 @@
-import { router, useLocalSearchParams } from "expo-router";
+import { useSignIn, useSignUp } from "@clerk/expo";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 
 import { AuthScreen } from "@/components/auth/auth-screen";
 import { Button, CodeInput, StatusBanner, Text } from "@/components/ui";
-import { authErrorMessage, resendCode, verifyEmail } from "@/lib/auth/mock-auth";
+import { authErrorMessage } from "@/lib/auth/clerk-errors";
 
 const CODE_LENGTH = 6;
 const RESEND_SECONDS = 30;
 
 export default function Verify() {
-  const { email } = useLocalSearchParams<{ email?: string }>();
+  // One screen confirms both a new sign-up's email and a sign-in on a new device.
+  const { email, flow } = useLocalSearchParams<{ email?: string; flow?: "sign-up" | "sign-in" }>();
+  const { signUp } = useSignUp();
+  const { signIn } = useSignIn();
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>();
@@ -29,9 +33,20 @@ export default function Verify() {
     setNotice(undefined);
     setSubmitting(true);
     try {
-      await verifyEmail(value);
-      if (router.canDismiss()) router.dismissAll();
-      router.replace("/home");
+      // The root layout's guards move to home once the session is active.
+      if (flow === "sign-in") {
+        const checked = await signIn.mfa.verifyEmailCode({ code: value });
+        if (checked.error) throw checked.error;
+        if (signIn.status !== "complete") throw new Error(`Unhandled sign-in status: ${signIn.status}`);
+        const done = await signIn.finalize();
+        if (done.error) throw done.error;
+      } else {
+        const checked = await signUp.verifications.verifyEmailCode({ code: value });
+        if (checked.error) throw checked.error;
+        if (signUp.status !== "complete") throw new Error(`Unhandled sign-up status: ${signUp.status}`);
+        const done = await signUp.finalize();
+        if (done.error) throw done.error;
+      }
     } catch (e) {
       setError(authErrorMessage(e));
     } finally {
@@ -43,7 +58,11 @@ export default function Verify() {
     setCooldown(RESEND_SECONDS);
     setError(undefined);
     try {
-      await resendCode();
+      const sent =
+        flow === "sign-in"
+          ? await signIn.mfa.sendEmailCode()
+          : await signUp.verifications.sendEmailCode();
+      if (sent.error) throw sent.error;
       setNotice("We sent you a new code.");
     } catch (e) {
       setError(authErrorMessage(e));
