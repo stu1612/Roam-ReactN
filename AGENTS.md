@@ -19,7 +19,7 @@ npx eas-cli@latest <cmd>    # EAS builds, submits, and updates (use instead of b
 ## Expo
 
 - Expo ships breaking changes every SDK release, so don't trust memory. Before touching an Expo, EAS, or React Native API, check the `expo` major version in `package.json` and read `https://docs.expo.dev/versions/v<major>.0.0/`. For anything else, start from https://docs.expo.dev/llms.txt and follow its links.
-- Routes live in `src/app/`: every file is a screen and `_layout.tsx` files define navigators. Onboarding is `src/app/index.tsx`; auth screens live in `src/app/(auth)/` (placeholders until Clerk). API routes are `src/app/api/*+api.ts`. Keep components, hooks, and utils outside `src/app/`.
+- Routes live in `src/app/`: every file is a screen and `_layout.tsx` files define navigators. Onboarding is `src/app/index.tsx`; auth screens (sign-up, verify, sign-in) live in `src/app/(auth)/`; `src/app/home.tsx` is the signed-in placeholder. API routes are `src/app/api/*+api.ts`. Keep components, hooks, and utils outside `src/app/`.
 - `ios/` and `android/` are generated. Never create or edit them by hand; configure native behavior in `app.json` and config plugins.
 - Target iPhone first, but keep everything working on Android too: no iOS-only APIs without an Android fallback.
 - The app runs in Expo Go, which only includes its bundled native modules. Only use libraries Expo Go supports. If a feature truly needs native code outside Expo Go, ask before adding it, because it means switching to a development build (`npx eas-cli@latest build --profile development`). The user has an Expo account for EAS.
@@ -28,7 +28,7 @@ npx eas-cli@latest <cmd>    # EAS builds, submits, and updates (use instead of b
 
 Each tool has one job. Ask before moving a responsibility to a different tool.
 
-- **Auth:** Clerk is the source of truth. The app keeps its own custom auth screens. Set Clerk up through the Clerk CLI and use the Clerk MCP for current Expo patterns. Use `@clerk/expo` custom flows (works in Expo Go, supports Expo SDK 54–58). Don't use Clerk's native components or native Google/Apple sign-in: they need a development build. Browser-based OAuth through `expo-auth-session` is fine.
+- **Auth:** Clerk is the source of truth. The app keeps its own custom auth screens. Set Clerk up through the Clerk CLI and use the Clerk MCP for current Expo patterns. Use `@clerk/expo` custom flows (works in Expo Go, supports Expo SDK 54–58). Don't use Clerk's native components or native Google/Apple sign-in: they need a development build. Browser-based OAuth through `expo-auth-session` is fine. Until Clerk lands, auth is mocked in `src/lib/auth/mock-auth.ts`; screens only call that module, so the Clerk swap stays there.
 - **Content:** Sanity (properties, hosts, policies, house rules). Studio is a standalone app in `studio/`. Schema deploys and content changes go through the Sanity MCP, and generated property copy uses Agent Actions.
 - **Exact constraints** (price, guests, type, amenities, pets, place): GROQ filters, with values always passed as params.
 - **Soft intent** (quiet, cozy, secluded): Dataset Embeddings via `text::semanticSimilarity()` inside `score()`.
@@ -42,8 +42,8 @@ Each tool has one job. Ask before moving a responsibility to a different tool.
 
 - Tokens (colors, fonts, type ramp, radii, shadows, `--spacing: 4px`) live only in `global.css` `@theme`. `src/constants/theme.ts` mirrors just the values that can't go through `className` (icon colors/sizes, motion). No hex, `fontSize` or `fontWeight` anywhere else; new values become tokens first. Light mode only for now.
 - Font: Plus Jakarta Sans 400/500/700/800 via `@expo-google-fonts/plus-jakarta-sans`, loaded in the root layout. Pick weight with `font-jakarta` / `-medium` / `-bold` / `-extrabold`, never `fontWeight` or Tailwind's `font-bold` (weight utilities). Type-ramp line heights are unitless ratios: react-native-css multiplies them by font size, so `34px` would become 34×.
-- Icons: `lucide-react-native`, stroke 2, sizes from `iconSize`. Brand marks (Google G) are SVG components.
-- Shared UI lives in `src/components/ui/` (import from `@/components/ui`). Use these before writing new styled views. Text always goes through `Text` with a `variant`.
+- Icons: `lucide-react-native`, stroke 2, sizes from `iconSize`. Brand marks (Google G, Apple) are SVG components.
+- Shared UI lives in `src/components/ui/` (import from `@/components/ui`). Use these before writing new styled views. Text always goes through `Text` with a `variant`. Forms use `TextField` (`label` for the two-line auth style, `error` for messages) and `CodeInput` for one-time codes.
 - Third-party views that ignore `className` (`expo-image`, `GlassView`, `Animated.View`) sit inside a styled `View`.
 - Preview every new primitive in `src/app/design-system.tsx` (dev-only, linked from home).
 

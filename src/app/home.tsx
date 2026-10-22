@@ -1,23 +1,31 @@
-import { Link, router } from "expo-router";
+import { Link, router, Stack } from "expo-router";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Logo, Text } from "@/components/ui";
 
-// Stand-in until Clerk custom flows are built (see prompts/03-onboarding.md).
-export function AuthPlaceholder({ title }: { title: string }) {
+// Rebuild the stack as onboarding → sign in, so sign in keeps its back button
+// the same way it has when reached from onboarding.
+function signOut() {
+  router.replace("/");
+  router.push("/sign-in");
+}
+
+// Signed-in placeholder until the home screen is designed.
+export default function Home() {
   const insets = useSafeAreaInsets();
   return (
     <View
       style={{ paddingTop: insets.top + 16, paddingBottom: insets.bottom + 16 }}
       className="flex-1 gap-4 bg-surface px-6"
     >
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: false }} />
       <Logo height={40} />
       <Text variant="hero" className="mt-6">
-        {title}
+        You&apos;re in
       </Text>
       <Text variant="body" tone="muted">
-        Coming soon. Accounts arrive with the Clerk sign-in flow.
+        Sign-in is mocked for now. Stays arrive with search.
       </Text>
       <View className="flex-1" />
       {__DEV__ ? (
@@ -25,7 +33,7 @@ export function AuthPlaceholder({ title }: { title: string }) {
           <Button title="Design system" variant="secondary" />
         </Link>
       ) : null}
-      <Button title="Back" variant="secondary" onPress={() => router.back()} />
+      <Button title="Sign out" variant="secondary" onPress={signOut} />
     </View>
   );
 }
