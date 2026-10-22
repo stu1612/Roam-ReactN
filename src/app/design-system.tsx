@@ -10,6 +10,7 @@ import {
   Home,
   List,
   Lock,
+  Mail,
   Map,
   MapPin,
   MessageSquareMore,
@@ -30,9 +31,11 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
+  AppleIcon,
   Badge,
   Button,
   Chip,
+  CodeInput,
   GlassTabBar,
   GoogleIcon,
   IconButton,
@@ -102,6 +105,7 @@ export default function DesignSystem() {
   const [count, setCount] = useState(1);
   const [banners, setBanners] = useState({ success: true, error: true });
   const [name, setName] = useState("Joanna Smith");
+  const [code, setCode] = useState("12");
 
   return (
     <>
@@ -145,6 +149,7 @@ export default function DesignSystem() {
         <Section title="04. Buttons">
           <Button title="Book this stay" showArrow />
           <Button title="Continue with Google" variant="secondary" icon={<GoogleIcon />} />
+          <Button title="Continue with Apple" variant="secondary" icon={<AppleIcon />} />
           <Button title="Loading" loading />
           <Button title="Disabled" disabled />
           <View className="flex-row gap-4">
@@ -160,6 +165,11 @@ export default function DesignSystem() {
           <TextField icon={User} placeholder="Enter your name" />
           <TextField icon={User} placeholder="Enter your name" value={name} onChangeText={setName} />
           <TextField icon={Lock} placeholder="Password" defaultValue="secret123" secure />
+          <TextField icon={User} label="Full name" placeholder="e.g. Adrian Hajdin" />
+          <TextField icon={Lock} label="Password" placeholder="At least 8 characters" secure />
+          <TextField icon={Mail} label="Email address" defaultValue="adrian@" error="Enter a valid email address" />
+          <CodeInput value={code} onChangeText={setCode} />
+          <CodeInput value="000000" onChangeText={() => {}} error />
         </Section>
 
         <Section title="06. Filter chips">

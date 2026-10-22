@@ -28,5 +28,9 @@ export default function RootLayout() {
   // On a font error, render anyway with the system font rather than blocking.
   if (!loaded && !error) return null;
 
-  return <Stack />;
+  return (
+    <Stack>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+    </Stack>
+  );
 }
